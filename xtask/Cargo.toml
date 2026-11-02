@@ -1,0 +1,13 @@
+[package]
+name = "xtask"
+description = "Entwicklerwerkzeuge für Knipsdruck (Demo-Fotos für README und Tests)"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+image.workspace = true
+anyhow.workspace = true

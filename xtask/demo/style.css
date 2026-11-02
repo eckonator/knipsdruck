@@ -1,0 +1,13 @@
+/* SPDX-License-Identifier: MIT OR Apache-2.0 */
+/* Gemeinsame Optik der Demo-Dokumente (A4 bei 150 dpi: 1240 × 1754 px) */
+html, body { margin: 0; }
+body { width: 1240px; height: 1754px; background: #fbfaf7; color: #1d1d1f; font: 27px/1.5 Georgia, "Times New Roman", serif; }
+.page { padding: 120px 130px; box-sizing: border-box; height: 100%; position: relative; }
+.sans { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; }
+h1 { font: 700 46px/1.2 "Helvetica Neue", Helvetica, Arial, sans-serif; margin: 0 0 30px; }
+h2 { font: 700 32px/1.3 "Helvetica Neue", Helvetica, Arial, sans-serif; margin: 40px 0 14px; }
+.small { font-size: 21px; color: #555; }
+.line { border-bottom: 2px solid #9a9a9a; height: 52px; }
+.hand { font-family: "Bradley Hand", "Noteworthy", "Comic Sans MS", cursive; color: #2343a8; font-size: 34px; }
+.marker { background: linear-gradient(transparent 45%, #ffe45c 45%, #ffe45c 88%, transparent 88%); }
+footer { position: absolute; left: 130px; right: 130px; bottom: 90px; font: 19px/1.4 "Helvetica Neue", Arial, sans-serif; color: #777; display: flex; justify-content: space-between; }

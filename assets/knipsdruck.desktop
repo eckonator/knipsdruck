@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=Knipsdruck
+GenericName=Document photo printer
+GenericName[de]=Dokumentfotos drucken
+Comment=Turn photos of documents into clean, print-ready pages
+Comment[de]=Fotos von Dokumenten gerade rücken und druckfertig machen
+Exec=knipsdruck %F
+Icon=knipsdruck
+Terminal=false
+Categories=Graphics;Office;Scanning;
+Keywords=scan;photo;document;print;PDF;Scan;Foto;Dokument;Drucken;
+StartupWMClass=knipsdruck

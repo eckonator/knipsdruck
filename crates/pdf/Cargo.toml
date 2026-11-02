@@ -1,0 +1,12 @@
+[package]
+name = "kd-pdf"
+description = "Knipsdruck: Seitenbilder als PDF schreiben"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+image.workspace = true

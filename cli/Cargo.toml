@@ -1,0 +1,15 @@
+[package]
+name = "knipsdruck-cli"
+description = "Knipsdruck auf der Kommandozeile: Fotos von Dokumenten als druckfertiges PDF"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+kd-core.workspace = true
+kd-pdf.workspace = true
+anyhow.workspace = true
+image.workspace = true

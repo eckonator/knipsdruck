@@ -1,0 +1,202 @@
+# Baut Knipsdruck für macOS, Windows und Linux und veröffentlicht einen Release unter der
+# Versionsnummer aus Cargo.toml (Tag `v<Version>`).
+#
+# - Jeder Push auf main ersetzt den Release dieser Version durch den neuen Stand.
+# - Neue Version: `version` in Cargo.toml erhöhen; der nächste Push legt den neuen Release an,
+#   ältere Versionen bleiben stehen. Die App meldet neue Versionen (wenn der Nutzer das erlaubt).
+# - Von Hand unter „Actions → Release → Run workflow“: nur Artefakte, kein Release.
+
+name: Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14
+            name: macOS
+          - os: windows-latest
+            name: Windows
+          # Älteres Ubuntu, damit das Programm auch auf älteren Distributionen läuft (glibc)
+          - os: ubuntu-22.04
+            name: Linux
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Rust installieren
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.name == 'macOS' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Linux-Pakete
+        if: matrix.name == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxkbcommon-dev libwayland-dev libx11-dev libxcursor-dev \
+            libxrandr-dev libxi-dev libgl1-mesa-dev pkg-config
+
+      - name: Tests
+        run: cargo test --workspace --release
+
+      - name: Lizenzhinweise sammeln
+        shell: bash
+        run: |
+          cargo install cargo-bundle-licenses --locked
+          cargo bundle-licenses --format yaml --output THIRD-PARTY-LICENSES.yml
+          mkdir -p licenses
+          cp LICENSE-MIT LICENSE-APACHE THIRD-PARTY-LICENSES.yml licenses/
+          cp assets/fonts/DejaVu-LICENSE.txt assets/fonts/Inter-LICENSE.txt licenses/
+
+      - name: Version bestimmen
+        id: version
+        shell: bash
+        run: echo "version=$(grep -m1 '^version' Cargo.toml | cut -d'"' -f2)" >> "$GITHUB_OUTPUT"
+
+      # macOS: Universal-Binary (Apple Silicon + Intel), als .app gebündelt. Signiert mit dem eigenen
+      # Zertifikat des Projekts (Secrets MACOS_SIGN_P12 als Base64 und MACOS_SIGN_PASSWORD), damit das
+      # Update per Knopf die neue Version als echt erkennt; ohne die Secrets ad-hoc.
+      - name: macOS bauen
+        if: matrix.name == 'macOS'
+        env:
+          MACOSX_DEPLOYMENT_TARGET: "11.0"
+          MACOS_SIGN_P12: ${{ secrets.MACOS_SIGN_P12 }}
+          KD_SIGN_PASSWORD: ${{ secrets.MACOS_SIGN_PASSWORD }}
+        run: |
+          if [ -n "$MACOS_SIGN_P12" ]; then
+            echo "$MACOS_SIGN_P12" | base64 --decode > "$RUNNER_TEMP/sign.p12"
+            eval "$(scripts/signing-keychain.sh "$RUNNER_TEMP/sign.p12" "$RUNNER_TEMP/sign.keychain-db")"
+            rm "$RUNNER_TEMP/sign.p12"
+          else
+            echo "::warning::kein Signatur-Zertifikat, die App wird ad-hoc signiert"
+          fi
+          cargo build --release -p knipsdruck --target aarch64-apple-darwin
+          cargo build --release -p knipsdruck --target x86_64-apple-darwin
+          mkdir -p target/release
+          lipo -create -output target/release/knipsdruck \
+            target/aarch64-apple-darwin/release/knipsdruck target/x86_64-apple-darwin/release/knipsdruck
+          KD_SKIP_BUILD=1 scripts/bundle-macos.sh
+          mkdir -p pkg
+          ditto -c -k --keepParent dist/Knipsdruck.app "pkg/Knipsdruck-${{ steps.version.outputs.version }}-macOS.zip"
+
+      # Zusätzlich ein DMG mit Installationsfenster; die ZIP bleibt für scripts/install-macos.sh
+      - name: macOS-DMG
+        if: matrix.name == 'macOS'
+        run: |
+          python3 -m venv "$RUNNER_TEMP/dmgbuild"
+          "$RUNNER_TEMP/dmgbuild/bin/pip" install --quiet dmgbuild==1.6.5
+          DMG_PYTHON="$RUNNER_TEMP/dmgbuild/bin/python3" scripts/make-dmg.sh \
+            "pkg/Knipsdruck-${{ steps.version.outputs.version }}-macOS.dmg"
+
+      # dist/windows ist die Vorlage für Installer und portable ZIP (gleicher Inhalt)
+      - name: Windows bauen
+        if: matrix.name == 'Windows'
+        shell: bash
+        run: |
+          cargo build --release -p knipsdruck -p knipsdruck-cli
+          mkdir -p dist/windows/licenses pkg
+          cp target/release/knipsdruck.exe dist/windows/Knipsdruck.exe
+          cp target/release/knipsdruck-cli.exe README.md dist/windows/
+          cp licenses/* dist/windows/licenses/
+          DIR="Knipsdruck-${{ steps.version.outputs.version }}-Windows"
+          cp -r dist/windows "pkg/$DIR"
+          cd pkg && 7z a -tzip "$DIR.zip" "$DIR" > /dev/null && rm -r "$DIR"
+
+      # Inno Setup liegt auf den Windows-Runnern meist schon bereit, sonst über Chocolatey.
+      # PowerShell statt bash: Git-Bash würde /D… als Pfad umschreiben.
+      - name: Windows-Installer
+        if: matrix.name == 'Windows'
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) {
+            choco install innosetup -y --no-progress
+          }
+          & $iscc /Q "/DAppVersion=${{ steps.version.outputs.version }}" "/DOutputDir=..\pkg" scripts\knipsdruck.iss
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Linux bauen
+        if: matrix.name == 'Linux'
+        run: |
+          cargo build --release -p knipsdruck -p knipsdruck-cli
+          DIR="Knipsdruck-${{ steps.version.outputs.version }}-Linux-x86_64"
+          mkdir -p "pkg/$DIR"
+          cp target/release/knipsdruck target/release/knipsdruck-cli \
+            assets/knipsdruck.desktop README.md licenses/* "pkg/$DIR/"
+          cp assets/icon-256.png "pkg/$DIR/knipsdruck.png"
+          cp scripts/install-linux.sh "pkg/$DIR/install.sh"
+          cd pkg && tar czf "$DIR.tar.gz" "$DIR" && rm -r "$DIR"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Knipsdruck-${{ matrix.name }}
+          path: pkg/*
+
+  release:
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Version bestimmen
+        id: version
+        run: echo "version=$(grep -m1 '^version' Cargo.toml | cut -d'"' -f2)" >> "$GITHUB_OUTPUT"
+      - uses: actions/download-artifact@v4
+        with:
+          path: pkg
+          merge-multiple: true
+      # Release dieser Version samt Tag entfernen, damit der Tag auf den neuen Commit zeigt
+      - name: Alten Release dieser Version entfernen
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release delete "v${{ steps.version.outputs.version }}" --cleanup-tag --yes --repo "$GITHUB_REPOSITORY" || true
+      # Release-Text: Abschnitt dieser Version aus CHANGELOG.md, dazu die Installationshinweise
+      - name: Release-Text erstellen
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          awk -v v="## $VERSION" '$0 == v {on=1; next} /^## / {on=0} on' CHANGELOG.md > notes.md
+          cat >> notes.md <<NOTES
+
+          ---
+          Builds for macOS (Apple Silicon and Intel, one universal app), Windows (64-bit) and Linux (x86_64).
+
+          **macOS, easiest way** (no Gatekeeper prompt): paste into Terminal
+          \`\`\`
+          curl -fsSL https://raw.githubusercontent.com/${{ github.repository }}/main/scripts/install-macos.sh | bash
+          \`\`\`
+          Or open the \`.dmg\` and drag Knipsdruck to Applications.
+
+          **Windows:** run \`Knipsdruck-$VERSION-Windows-Setup.exe\` (recommended, no admin rights needed).
+          The \`-Windows.zip\` is the portable version: unpack anywhere and start \`Knipsdruck.exe\`.
+
+          **Linux:** unpack the \`.tar.gz\` and run \`./install.sh\` (installs for your user, \`--uninstall\` removes it).
+
+          Built from commit ${{ github.sha }}. Installation notes are in the README.
+          NOTES
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          target_commitish: ${{ github.sha }}
+          name: Knipsdruck ${{ steps.version.outputs.version }}
+          body_path: notes.md
+          files: pkg/*

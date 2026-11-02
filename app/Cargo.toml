@@ -1,0 +1,31 @@
+[package]
+name = "knipsdruck"
+description = "Fotos von Dokumenten druckfertig machen"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+kd-core.workspace = true
+kd-pdf.workspace = true
+kd-print.workspace = true
+kd-phone.workspace = true
+kd-ocr.workspace = true
+log.workspace = true
+env_logger.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+anyhow.workspace = true
+image.workspace = true
+rayon.workspace = true
+eframe = { version = "0.36", features = ["glow"] }
+rfd = "0.17"
+dirs = "7"
+sys-locale = "0.3"
+arboard = { version = "3", default-features = false, features = ["image-data"] }
+
+[target.'cfg(windows)'.build-dependencies]
+winresource = "0.1"

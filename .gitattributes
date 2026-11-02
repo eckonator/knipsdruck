@@ -1,0 +1,11 @@
+# Skripte immer mit Unix-Zeilenenden auschecken, auch unter Windows (sonst scheitern bash und python daran)
+*.sh  text eol=lf
+*.py  text eol=lf
+# Inno Setup ist ein Windows-Werkzeug, dort sind Windows-Zeilenenden üblich
+*.iss text eol=crlf
+# Binäre Assets nie umwandeln
+*.png  binary
+*.icns binary
+*.ico  binary
+*.tiff binary
+*.ttf  binary

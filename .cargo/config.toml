@@ -1,0 +1,3 @@
+# `cargo xtask …` startet die Entwicklerwerkzeuge (Demo-Fotos)
+[alias]
+xtask = "run --quiet --package xtask --"

@@ -1,0 +1,34 @@
+[workspace]
+resolver = "3"
+members = ["crates/core", "crates/pdf", "crates/print", "crates/phone", "crates/ocr", "cli", "app", "xtask"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+authors = ["Markus Eckert"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/eckonator/knipsdruck"
+
+[workspace.dependencies]
+kd-core = { path = "crates/core" }
+kd-pdf = { path = "crates/pdf" }
+kd-print = { path = "crates/print" }
+kd-phone = { path = "crates/phone" }
+kd-ocr = { path = "crates/ocr" }
+anyhow = "1"
+log = "0.4"
+env_logger = "0.11"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+image = { version = "0.25", default-features = false, features = ["jpeg", "png", "webp", "tiff", "bmp", "gif"] }
+rayon = "1"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+
+# Bildverarbeitung auch im Debug-Build flott genug zum Ausprobieren
+[profile.dev.package."*"]
+opt-level = 2
+[profile.dev.package.kd-core]
+opt-level = 2

@@ -1,0 +1,16 @@
+/target
+**/*.rs.bk
+.DS_Store
+.idea/
+/dist
+/pkg
+# Von `cargo xtask demo-fotos` erzeugt
+/demo
+# Fotos der Testpersonen und eigene Testdaten: nie ins Repo (Blueprint 10.3)
+/testdaten
+*.jpeg
+*.jpg
+!docs/**/*.jpg
+# Interne Planungsunterlagen (Prototyp enthält die privaten Beispielfotos): nur lokal
+/prototype
+/Blueprint.md

@@ -1,0 +1,356 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: MIT OR Apache-2.0 -->
+<!-- Handyseite von „Vom Handy holen“: wird vom Computer ausgeliefert, lädt nichts aus dem Internet. -->
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="referrer" content="no-referrer">
+<meta name="kd-basis" content="{{BASIS}}">
+<title>Knipsdruck</title>
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --card: #ffffff;
+    --ink: #1a1c22;
+    --muted: #5a616d;
+    --line: #e2e5ea;
+    --accent: #1f5bd6;
+    --accent-ink: #ffffff;
+    --accent-press: #1a4db6;
+    --soft: #e8eefb;
+    --success: #1f9d55;
+    --error: #c62f2f;
+    --radius: 14px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #121419;
+      --card: #1b1e25;
+      --ink: #eceef2;
+      --muted: #a2a9b5;
+      --line: #2c313b;
+      --accent: #4a82f0;
+      --accent-press: #3a6fd8;
+      --soft: #1f2a40;
+      --success: #3cc47a;
+      --error: #f06a6a;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font: 17px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+  main {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: max(20px, env(safe-area-inset-top)) 16px max(28px, env(safe-area-inset-bottom));
+  }
+  header { display: flex; align-items: center; gap: 10px; margin: 4px 0 6px; }
+  header svg { width: 34px; height: 34px; flex: none; }
+  header h1 { font-size: 21px; font-weight: 700; letter-spacing: -0.01em; margin: 0; }
+  .status { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 15px; margin: 0 0 22px; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--success); flex: none; }
+  .status b { color: var(--ink); font-weight: 600; overflow-wrap: anywhere; }
+  .btn {
+    position: relative;
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    width: 100%; min-height: 60px; padding: 14px 18px; margin: 0 0 12px;
+    border-radius: var(--radius); border: 1.5px solid transparent;
+    font-size: 18px; font-weight: 600; cursor: pointer; user-select: none;
+    transition: background-color .15s, transform .08s;
+  }
+  .btn svg { width: 26px; height: 26px; flex: none; }
+  .btn:active { transform: scale(0.985); }
+  .btn.primary { background: var(--accent); color: var(--accent-ink); min-height: 76px; font-size: 19px; }
+  .btn.primary:active { background: var(--accent-press); }
+  .btn.secondary { background: var(--card); color: var(--accent); border-color: var(--line); }
+  .btn.secondary:active { background: var(--soft); }
+  .btn input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+  .btn:focus-within { outline: 3px solid color-mix(in srgb, var(--accent) 45%, transparent); outline-offset: 2px; }
+  .off .btn { opacity: .45; pointer-events: none; }
+  .tip { color: var(--muted); font-size: 15px; margin: 6px 2px 20px; }
+  .done {
+    display: none; padding: 14px 16px; margin: 0 0 14px; border-radius: var(--radius);
+    background: color-mix(in srgb, var(--success) 12%, var(--card)); color: var(--ink); font-size: 16px;
+  }
+  .done.show { display: block; }
+  .done b { color: var(--success); }
+  ul { list-style: none; margin: 0; padding: 0; }
+  li {
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 12px 14px; margin: 0 0 8px;
+  }
+  .row { display: flex; align-items: center; gap: 10px; }
+  .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; }
+  .state { flex: none; font-size: 14px; color: var(--muted); }
+  li.ok .state { color: var(--success); font-weight: 700; font-size: 17px; }
+  li.err .state { color: var(--error); }
+  .bar { height: 5px; border-radius: 3px; background: var(--line); margin-top: 9px; overflow: hidden; }
+  .bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .2s; }
+  li.ok .bar, li.err .bar { display: none; }
+  .msg { color: var(--error); font-size: 14px; margin-top: 4px; }
+  .again {
+    flex: none; border: 1px solid var(--line); background: var(--bg); color: var(--accent);
+    border-radius: 10px; padding: 6px 12px; font: inherit; font-size: 14px; font-weight: 600;
+  }
+  .ended {
+    display: none; padding: 18px; margin: 0 0 20px; border-radius: var(--radius);
+    background: var(--card); border: 1px solid var(--line); font-size: 16px;
+  }
+  .ended.show { display: block; }
+  .ended strong { display: block; margin-bottom: 4px; }
+  .ended span { color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <svg viewBox="0 0 40 40" aria-hidden="true">
+      <rect x="6" y="6" width="22" height="28" rx="3" transform="rotate(-10 17 20)"
+            fill="none" stroke="currentColor" stroke-opacity=".45" stroke-width="1.6" stroke-dasharray="3 2.5"/>
+      <rect x="12" y="6" width="22" height="28" rx="3" fill="#1f5bd6"/>
+      <path d="M17 14h12M17 20h12M17 26h8" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
+    </svg>
+    <h1>Knipsdruck</h1>
+  </header>
+
+  <p class="status" id="status">
+    <span class="dot" aria-hidden="true"></span>
+    <span><span data-t="verbunden">Verbunden mit</span> <b><span data-t="q1">„</span><span id="rechner">{{RECHNER}}</span><span data-t="q2">“</span></b></span>
+  </p>
+
+  <div class="ended" id="ended" role="status">
+    <strong data-t="endeTitel">Knipsdruck hat die Verbindung beendet.</strong>
+    <span data-t="endeText">Zum Weitermachen am Computer erneut „Vom Handy holen“ wählen.</span>
+  </div>
+
+  <div id="actions">
+    <label class="btn primary">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.6l1.4-2h5l1.4 2h1.6A2.5 2.5 0 0 1 20 8.5v8A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5z"/>
+        <circle cx="12" cy="12.5" r="3.6"/>
+      </svg>
+      <span id="kameraText" data-t="aufnehmen">Foto aufnehmen</span>
+      <input type="file" id="kamera" accept="image/*" capture="environment">
+    </label>
+    <label class="btn secondary">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/>
+        <circle cx="9" cy="9.5" r="1.6"/>
+        <path d="M4 17l5-5 4 4 2.5-2.5L20 18"/>
+      </svg>
+      <span data-t="galerie">Aus Galerie wählen</span>
+      <input type="file" id="galerie" accept="image/*" multiple>
+    </label>
+    <p class="tip" data-t="tipp">Tipp: Blatt flach hinlegen, alle vier Ecken im Bild.</p>
+  </div>
+
+  <div class="done" id="done" role="status"></div>
+  <ul id="liste" aria-live="polite"></ul>
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  var TEXTE = {
+    de: {
+      verbunden: 'Verbunden mit', q1: '„', q2: '“',
+      aufnehmen: 'Foto aufnehmen', naechstes: 'Nächstes Foto', galerie: 'Aus Galerie wählen',
+      tipp: 'Tipp: Blatt flach hinlegen, alle vier Ecken im Bild.',
+      endeTitel: 'Knipsdruck hat die Verbindung beendet.',
+      endeText: 'Zum Weitermachen am Computer erneut „Vom Handy holen“ wählen.',
+      wartet: 'wartet', nochmal: 'Nochmal',
+      fertig1: '1 Foto übertragen.', fertigN: '{n} Fotos übertragen.',
+      weiter: 'Weitere senden oder am Computer weitermachen.',
+      zu_gross: 'Zu groß (höchstens 50 MB)', kein_bild: 'Kein unterstütztes Bildformat',
+      zu_viele: 'Zu viele Fotos in dieser Sitzung', leer: 'Leere Datei',
+      abgebrochen: 'Übertragung abgebrochen', netz: 'Keine Verbindung zum Computer',
+      unbekannt: 'Übertragung fehlgeschlagen'
+    },
+    en: {
+      verbunden: 'Connected to', q1: '“', q2: '”',
+      aufnehmen: 'Take photo', naechstes: 'Next photo', galerie: 'Choose from gallery',
+      tipp: 'Tip: lay the page flat with all four corners in the picture.',
+      endeTitel: 'Knipsdruck has closed the connection.',
+      endeText: 'To continue, choose “Get from phone” on the computer again.',
+      wartet: 'waiting', nochmal: 'Retry',
+      fertig1: '1 photo sent.', fertigN: '{n} photos sent.',
+      weiter: 'Send more or continue on the computer.',
+      zu_gross: 'Too large (max. 50 MB)', kein_bild: 'Unsupported image format',
+      zu_viele: 'Too many photos in this session', leer: 'Empty file',
+      abgebrochen: 'Transfer interrupted', netz: 'No connection to the computer',
+      unbekannt: 'Transfer failed'
+    }
+  };
+  var MAX_BYTES = 50 * 1024 * 1024;
+  var basis = document.querySelector('meta[name="kd-basis"]').getAttribute('content');
+  var sprache = ((navigator.languages && navigator.languages[0]) || navigator.language || 'de').toLowerCase();
+  var T = sprache.indexOf('de') === 0 ? TEXTE.de : TEXTE.en;
+
+  var el = function (id) { return document.getElementById(id); };
+  var liste = el('liste');
+  var warteschlange = [];
+  var beschaeftigt = false;
+  var beendet = false;
+  var gesendet = 0;
+  var fehlversuche = 0;
+
+  function uebersetzen() {
+    document.documentElement.lang = T === TEXTE.de ? 'de' : 'en';
+    var knoten = document.querySelectorAll('[data-t]');
+    for (var i = 0; i < knoten.length; i++) {
+      var k = knoten[i].getAttribute('data-t');
+      if (T[k]) knoten[i].textContent = T[k];
+    }
+  }
+
+  function eintrag(name) {
+    var li = document.createElement('li');
+    li.innerHTML = '<div class="row"><span class="name"></span><span class="state"></span></div>' +
+      '<div class="bar"><i></i></div>';
+    li.querySelector('.name').textContent = name;
+    li.querySelector('.state').textContent = T.wartet;
+    liste.insertBefore(li, liste.firstChild);
+    return li;
+  }
+
+  function fortschritt(job, anteil) {
+    job.li.querySelector('.bar i').style.width = Math.round(anteil * 100) + '%';
+    job.li.querySelector('.state').textContent = Math.round(anteil * 100) + ' %';
+  }
+
+  function erfolg(job) {
+    job.li.className = 'ok';
+    job.li.querySelector('.state').textContent = '✓';
+    gesendet++;
+    el('kameraText').textContent = T.naechstes;
+    el('kameraText').removeAttribute('data-t');
+  }
+
+  function fehler(job, code) {
+    job.li.className = 'err';
+    job.li.querySelector('.state').textContent = '';
+    var alt = job.li.querySelector('.msg');
+    if (alt) alt.parentNode.removeChild(alt);
+    var msg = document.createElement('div');
+    msg.className = 'msg';
+    msg.textContent = T[code] || T.unbekannt;
+    job.li.appendChild(msg);
+    if (code === 'zu_gross' || code === 'kein_bild' || code === 'leer' || code === 'zu_viele') return;
+    var knopf = document.createElement('button');
+    knopf.type = 'button';
+    knopf.className = 'again';
+    knopf.textContent = T.nochmal;
+    knopf.onclick = function () {
+      if (beendet) return;
+      knopf.parentNode.removeChild(knopf);
+      msg.parentNode.removeChild(msg);
+      job.li.className = '';
+      job.li.querySelector('.state').textContent = T.wartet;
+      fortschritt(job, 0);
+      warteschlange.push(job);
+      weiter();
+    };
+    job.li.querySelector('.row').appendChild(knopf);
+  }
+
+  function zusammenfassung() {
+    var box = el('done');
+    if (gesendet === 0 || beendet) { box.className = 'done'; return; }
+    var satz = gesendet === 1 ? T.fertig1 : T.fertigN.replace('{n}', gesendet);
+    box.textContent = '';
+    var b = document.createElement('b');
+    b.textContent = '✓ ' + satz;
+    box.appendChild(b);
+    box.appendChild(document.createTextNode(' ' + T.weiter));
+    box.className = 'done show';
+  }
+
+  function senden(job) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', basis + '/foto');
+    xhr.setRequestHeader('X-Dateiname', encodeURIComponent(job.file.name || ''));
+    xhr.upload.onprogress = function (e) {
+      if (e.lengthComputable && e.total > 0) fortschritt(job, e.loaded / e.total);
+    };
+    xhr.onload = function () {
+      var antwort = null;
+      try { antwort = JSON.parse(xhr.responseText); } catch (e) { antwort = null; }
+      if (xhr.status === 200 && antwort && antwort.ok) erfolg(job);
+      else if (xhr.status === 404) { fehler(job, 'netz'); beenden(); }
+      else fehler(job, antwort && antwort.fehler ? antwort.fehler : 'unbekannt');
+    };
+    xhr.onerror = function () { fehler(job, 'netz'); };
+    xhr.onabort = function () { fehler(job, 'abgebrochen'); };
+    xhr.onloadend = function () { beschaeftigt = false; weiter(); };
+    xhr.send(job.file);
+  }
+
+  function weiter() {
+    if (beschaeftigt || beendet) return;
+    var job = warteschlange.shift();
+    if (!job) { zusammenfassung(); return; }
+    el('done').className = 'done';
+    if (job.file.size > MAX_BYTES) { fehler(job, 'zu_gross'); weiter(); return; }
+    beschaeftigt = true;
+    fortschritt(job, 0);
+    senden(job);
+  }
+
+  function hinzufuegen(input) {
+    var dateien = input.files ? Array.prototype.slice.call(input.files) : [];
+    for (var i = 0; i < dateien.length; i++) {
+      warteschlange.push({ file: dateien[i], li: eintrag(dateien[i].name || 'Foto') });
+    }
+    input.value = '';
+    weiter();
+  }
+
+  function beenden() {
+    if (beendet) return;
+    beendet = true;
+    el('ended').className = 'ended show';
+    el('actions').className = 'off';
+    el('status').style.display = 'none';
+    el('done').className = 'done';
+    el('kamera').disabled = true;
+    el('galerie').disabled = true;
+  }
+
+  function pruefen() {
+    // Während einer Übertragung antwortet der Computer erst danach; dann nicht als Ausfall werten.
+    if (beendet || beschaeftigt || document.hidden) return;
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', basis + '/status');
+    xhr.timeout = 4000;
+    xhr.onload = function () {
+      if (xhr.status === 404) beenden();
+      else if (xhr.status === 200) fehlversuche = 0;
+      else ausfall();
+    };
+    xhr.onerror = xhr.ontimeout = ausfall;
+    xhr.send();
+  }
+
+  function ausfall() {
+    fehlversuche++;
+    if (fehlversuche >= 2) beenden();
+  }
+
+  uebersetzen();
+  el('kamera').addEventListener('change', function () { hinzufuegen(this); });
+  el('galerie').addEventListener('change', function () { hinzufuegen(this); });
+  setInterval(pruefen, 5000);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) pruefen(); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+[package]
+name = "kd-core"
+description = "Knipsdruck: Blatt erkennen, entzerren und aufbereiten"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+image.workspace = true
+rayon.workspace = true
+serde.workspace = true
+log.workspace = true
