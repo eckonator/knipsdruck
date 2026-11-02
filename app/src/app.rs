@@ -122,6 +122,9 @@ impl App {
         let dev_active = dev.active();
         app.dev = Some(dev);
         app.reload_recent();
+        if app.settings.searchable_pdf && !dev_active {
+            kd_ocr::warm_up();
+        }
         match app.settings.update_check {
             _ if dev_active => {}
             None => app.ask_update = true,
@@ -360,6 +363,10 @@ impl App {
     pub fn remove(&mut self, id: u64) {
         self.doc.snapshot();
         self.doc.pages.retain(|p| p.id() != id);
+        // Leeres Dokument verhält sich wie ein neues
+        if self.doc.pages.is_empty() {
+            self.layout = Layout::Pages;
+        }
         self.toast(tr("Seite entfernt. ⌘Z holt sie zurück.").replace('⌘', cmd_key()));
     }
 

@@ -133,13 +133,14 @@ pub fn paint(painter: &Painter, rect: Rect, icon: Icon, color: Color32) {
         }
         Icon::Gear => {
             pen.circle(12.0, 12.0, 3.0);
-            let teeth: Vec<(f32, f32)> = (0..16)
-                .map(|i| {
-                    let a = i as f32 / 16.0 * TAU;
-                    let r = if (i / 2) % 2 == 0 { 9.0 } else { 7.0 };
-                    let a = a + if i % 2 == 0 { -0.12 } else { 0.12 };
-                    (12.0 + r * a.cos(), 12.0 + r * a.sin())
+            // 8 Zähne, je Zahn: Fuß, Kopf, Kopf, Fuß (Kopf schmaler als Fuß)
+            let step = TAU / 8.0;
+            let teeth: Vec<(f32, f32)> = (0..8)
+                .flat_map(|i| {
+                    let a = i as f32 * step;
+                    [(7.0, a - 0.30), (9.8, a - 0.20), (9.8, a + 0.20), (7.0, a + 0.30)]
                 })
+                .map(|(r, a)| (12.0 + r * a.cos(), 12.0 + r * a.sin()))
                 .collect();
             pen.closed(&teeth);
         }

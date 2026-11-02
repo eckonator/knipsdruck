@@ -222,7 +222,11 @@ fn on_off(ui: &mut egui::Ui, value: &mut bool) {
 
 fn searchable(app: &mut App, ui: &mut egui::Ui, ctx: &egui::Context) {
     section(ui, ctx, tr("Durchsuchbares PDF"));
+    let was_on = app.settings.searchable_pdf;
     on_off(ui, &mut app.settings.searchable_pdf);
+    if app.settings.searchable_pdf && !was_on {
+        kd_ocr::warm_up();
+    }
     match kd_ocr::available_engine_name() {
         Some(engine) => hint(
             ui,

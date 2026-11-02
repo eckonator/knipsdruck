@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.1
+
+- **Searchable PDF is now on by default.** The text recognition model is loaded in the background when the
+  app starts, so the first save no longer waits up to half a minute on macOS.
+- Removing the last page switches back from *ID copy* to *One page per photo*, so the next photo is no longer
+  shrunk to card size by mistake.
+- Clearer settings icon (gear with eight distinct teeth).
+
 ## 0.1.0
 
 First release.

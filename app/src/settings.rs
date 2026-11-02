@@ -111,7 +111,7 @@ impl Default for Settings {
             color: true,
             bw_style: BwStyle::Gray,
             pdf_quality: PdfQuality::Print,
-            searchable_pdf: false,
+            searchable_pdf: true,
             recent: true,
             recent_hint_shown: false,
             update_check: None,

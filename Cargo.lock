@@ -1874,7 +1874,7 @@ dependencies = [
 
 [[package]]
 name = "kd-core"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "image",
  "log",
@@ -1884,7 +1884,7 @@ dependencies = [
 
 [[package]]
 name = "kd-ocr"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "image",
  "log",
@@ -1897,14 +1897,14 @@ dependencies = [
 
 [[package]]
 name = "kd-pdf"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "image",
 ]
 
 [[package]]
 name = "kd-phone"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "getrandom 0.4.3",
  "if-addrs",
@@ -1915,7 +1915,7 @@ dependencies = [
 
 [[package]]
 name = "kd-print"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "image",
  "log",
@@ -1945,7 +1945,7 @@ checksum = "e2db585e1d738fc771bf08a151420d3ed193d9d895a36df7f6f8a9456b911ddc"
 
 [[package]]
 name = "knipsdruck"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "arboard",
@@ -1969,7 +1969,7 @@ dependencies = [
 
 [[package]]
 name = "knipsdruck-cli"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "image",
@@ -4675,7 +4675,7 @@ checksum = "e450f9b2ed1dff33c94c12589a87338689467b9c4f5d8a5710bd09a847d2c8a7"
 
 [[package]]
 name = "xtask"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "image",

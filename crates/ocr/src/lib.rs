@@ -56,6 +56,19 @@ pub fn available_engine_name() -> Option<&'static str> {
     engine().map(|e| e.name())
 }
 
+/// Lädt das Modell der systemeigenen Engine im Hintergrund vor. Apple Vision braucht beim ersten Aufruf
+/// nach dem Systemstart bis zu einer halben Minute, danach Sekundenbruchteile.
+pub fn warm_up() {
+    std::thread::Builder::new()
+        .name("kd-ocr-warm-up".into())
+        .spawn(|| {
+            if let Some(engine) = native().filter(|e| e.available()) {
+                let _ = engine.recognize(&RgbImage::from_pixel(64, 32, image::Rgb([255; 3])));
+            }
+        })
+        .ok();
+}
+
 /// PNG für Engines, die ein Bild als Datei bzw. Datenblock erwarten.
 pub(crate) fn encode_png(image: &RgbImage) -> Result<Vec<u8>, String> {
     use image::ImageEncoder;
