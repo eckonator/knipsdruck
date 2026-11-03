@@ -122,6 +122,7 @@ fn en(de: &str) -> Option<&'static str> {
         "Bitte Ecken prüfen" => "Please check corners",
         "Bitte prüfen" => "Please check",
         "Blatt" => "Sheet",
+        "Allgemein" => "General",
         "Breite" => "Width",
         "ca. {} MB" => "approx. {} MB",
         "Code gilt noch {} Min." => "Code valid for {} min",
@@ -147,6 +148,7 @@ fn en(de: &str) -> Option<&'static str> {
         "Drehen" => "Rotate",
         "Drehen (R)" => "Rotate (R)",
         "Druck wird vorbereitet …" => "Preparing to print …",
+        "Druck & PDF" => "Print & PDF",
         "Drucken" => "Print",
         "Drucken hat nicht geklappt: {}" => "Printing didn't work: {}",
         "Drucker" => "Printer",
@@ -163,6 +165,7 @@ fn en(de: &str) -> Option<&'static str> {
         }
         "Eingefügtes Bild.png" => "Pasted image.png",
         "Einstellungen" => "Settings",
+        "Einstellungen werden automatisch gespeichert." => "Settings are saved automatically.",
         "Ergebnis" => "Result",
         "ERGEBNIS" => "RESULT",
         "Es ist kein Drucker eingerichtet. Bitte in den Systemeinstellungen einen Drucker hinzufügen." => {
@@ -256,6 +259,7 @@ fn en(de: &str) -> Option<&'static str> {
         "oder {}V zum Einfügen" => "or {}V to paste",
         "Ohne" => "None",
         "Originalfoto" => "Original photo",
+        "Papier" => "Paper",
         "Papierformat" => "Paper size",
         "Papierformat ändern" => "Change paper size",
         "PDF wird erstellt …" => "Creating PDF …",

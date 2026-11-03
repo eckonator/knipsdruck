@@ -26,6 +26,8 @@ pub enum Icon {
     Photo,
     Card,
     Bulb,
+    Sheet,
+    Info,
 }
 
 /// Zeichenhilfe: Koordinaten im 24er-Raster auf das Zielrechteck abbilden.
@@ -203,6 +205,17 @@ pub fn paint(painter: &Painter, rect: Rect, icon: Icon, color: Color32) {
             pen.arc(12.0, 9.0, 6.0, PI * 0.8, PI * 2.2);
             pen.line(&[(7.6, 13.2), (9.0, 15.0), (9.0, 18.0)]);
             pen.line(&[(16.4, 13.2), (15.0, 15.0), (15.0, 18.0)]);
+        }
+        Icon::Sheet => {
+            pen.rect(5.0, 3.0, 14.0, 18.0, 2.0);
+            pen.line(&[(8.5, 8.0), (15.5, 8.0)]);
+            pen.line(&[(8.5, 12.0), (15.5, 12.0)]);
+            pen.line(&[(8.5, 16.0), (12.5, 16.0)]);
+        }
+        Icon::Info => {
+            pen.circle(12.0, 12.0, 9.0);
+            pen.line(&[(12.0, 11.0), (12.0, 16.5)]);
+            pen.dot(12.0, 7.8, 1.3);
         }
     }
 }

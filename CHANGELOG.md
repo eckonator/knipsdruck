@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.2
+
+- **Settings redesigned:** sections with icons on the left (General, Paper, Print & PDF, About), the options in
+  cards on the right. Clicking the paper size in the footer opens the *Paper* section directly.
+- *Check for updates now* and *Clear history now* are proper buttons, the update check at startup is an
+  on/off choice like the other options.
+
 ## 0.1.1
 
 - **Searchable PDF is now on by default.** The text recognition model is loaded in the background when the

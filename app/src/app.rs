@@ -809,7 +809,7 @@ impl App {
             let link =
                 ui.add(egui::Label::new(RichText::new(info).color(theme::muted(ctx)).size(15.0)).sense(Sense::click()));
             if link.on_hover_text(tr("Papierformat ändern")).clicked() {
-                self.dialog = Dialog::Settings(Default::default());
+                self.dialog = Dialog::Settings(crate::settings_ui::SettingsState::at(crate::settings_ui::Page::Paper));
             }
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                 ui.add_space(12.0);

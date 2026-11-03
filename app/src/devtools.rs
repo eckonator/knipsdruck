@@ -2,7 +2,7 @@
 //! Hilfen für Entwicklung und Bildschirmfotos (README), über Umgebungsvariablen:
 //!
 //! - `KD_FOTOS=a.jpg|b.jpg` lädt diese Fotos beim Start
-//! - `KD_DIALOG=einstellungen|handy|ecken|vorschau|pdf|ausweis` öffnet das nach dem Laden
+//! - `KD_DIALOG=einstellungen[-allgemein|-papier|-druck|-ueber]|handy|ecken|vorschau|pdf|ausweis` öffnet das nach dem Laden
 //! - `KD_SCREENSHOT=/pfad/bild.png` speichert ein Bild des Fensters, sobald alles gerechnet ist, und beendet die App
 //! - `KD_WARTEN=8` wartet so viele Sekunden mehr bis zum Bildschirmfoto
 //! - `KD_SIZE=1440x900`, `KD_LANG=de|en`, `KD_THEME=hell|dunkel`
@@ -105,6 +105,12 @@ fn open_dialog(app: &mut App, ctx: &egui::Context, which: &str) {
     let first = app.doc.pages.first().map(|p| p.id());
     match which {
         "einstellungen" => app.dialog = Dialog::Settings(Default::default()),
+        _ if which.starts_with("einstellungen-") => {
+            match crate::settings_ui::Page::from_name(&which["einstellungen-".len()..]) {
+                Some(page) => app.dialog = Dialog::Settings(crate::settings_ui::SettingsState::at(page)),
+                None => log::warn!("KD_DIALOG={which} unbekannt"),
+            }
+        }
         "handy" => app.open_phone(ctx),
         "ecken" => {
             if let Some(id) = app
